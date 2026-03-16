@@ -43,4 +43,5 @@ if __name__ == '__main__':
     time.sleep(1)
 
     print("Flask backend starting on http://localhost:5001")
-    app.run(host='0.0.0.0', port=5001, debug=False, use_reloader=False)
+    # Only bind to localhost for security
+    app.run(host='127.0.0.1', port=5001, debug=False, use_reloader=False)
