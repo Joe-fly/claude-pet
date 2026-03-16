@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Pet</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Title bar for dragging -->
+    <div id="title-bar">
+      <span class="title">Claude Pet</span>
+      <div class="window-controls">
+        <button id="btn-toggle-cli" class="btn-control" title="打开 CLI">⚡</button>
+        <button id="btn-minimize" class="btn-control">─</button>
+        <button id="btn-close" class="btn-control">✕</button>
+      </div>
+    </div>
+
+    <!-- Main content area -->
+    <div id="main-content">
+      <!-- CLI Panel -->
+      <div id="cli-panel" class="hidden">
+        <div id="terminal-container"></div>
+        <div id="cli-input-area">
+          <input type="text" id="cli-input" placeholder="在 CLI 模式输入...">
+        </div>
+      </div>
+
+      <!-- Pet Panel -->
+      <div id="pet-panel">
+        <!-- Game container -->
+        <div id="game-container"></div>
+
+        <!-- Chat bubble -->
+        <div id="chat-bubble" class="hidden">
+          <div class="bubble-content"></div>
+          <div class="bubble-arrow"></div>
+        </div>
+
+        <!-- Permission bubble -->
+        <div id="permission-bubble" class="hidden">
+          <div class="permission-icon">⚠️</div>
+          <div class="permission-text">需要授权操作</div>
+          <div class="permission-buttons">
+            <button id="btn-permit" class="permission-btn permit">允许</button>
+            <button id="btn-permit-perm" class="permission-btn permit-perm">永久允许</button>
+            <button id="btn-deny" class="permission-btn deny">拒绝</button>
+          </div>
+        </div>
+
+        <!-- Input area -->
+        <div id="input-area">
+          <textarea id="user-input" placeholder="和 Claude 聊天..." rows="1" maxlength="500"></textarea>
+          <button id="btn-send">发送</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status indicator -->
+    <div id="status">
+      <span id="status-dot"></span>
+      <span id="status-text">在线</span>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <!-- xterm.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
