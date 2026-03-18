@@ -144,11 +144,39 @@ class ClaudePTY {
         this.notifyStatus('thinking');
       }
     }
+    // Check for analyzing state
+    else if (this.checkAnalyzingState(data)) {
+      if (this.currentStatus !== 'analyzing') {
+        this.currentStatus = 'analyzing';
+        this.notifyStatus('analyzing');
+      }
+    }
     // Check for coding state
     else if (this.checkCodingState(data)) {
       if (this.currentStatus !== 'coding') {
         this.currentStatus = 'coding';
         this.notifyStatus('coding');
+      }
+    }
+    // Check for executing state
+    else if (this.checkExecutingState(data)) {
+      if (this.currentStatus !== 'executing') {
+        this.currentStatus = 'executing';
+        this.notifyStatus('executing');
+      }
+    }
+    // Check for using tools state
+    else if (this.checkUsingToolsState(data)) {
+      if (this.currentStatus !== 'using_tools') {
+        this.currentStatus = 'using_tools';
+        this.notifyStatus('using_tools');
+      }
+    }
+    // Check for downloading state
+    else if (this.checkDownloadingState(data)) {
+      if (this.currentStatus !== 'downloading') {
+        this.currentStatus = 'downloading';
+        this.notifyStatus('downloading');
       }
     }
     // Check for done state
@@ -569,6 +597,82 @@ class ClaudePTY {
       /Edit.*file/i,
       /Terminal command/i,
       /Bash command/i
+    ];
+
+    return patterns.some(pattern => pattern.test(data));
+  }
+
+  // Check if Claude is analyzing (deep analysis)
+  checkAnalyzingState(data) {
+    const patterns = [
+      /Analyzing/i,
+      /Deep analysis/i,
+      /Examining/i,
+      /Reviewing/i,
+      /Inspecting/i,
+      /Checking/i,
+      /Verifying/i,
+      /Validating/i,
+      /Scanning/i,
+      /Indexing/i
+    ];
+
+    return patterns.some(pattern => pattern.test(data));
+  }
+
+  // Check if executing commands
+  checkExecutingState(data) {
+    const patterns = [
+      /Running/i,
+      /Executing/i,
+      /Running.*\.\.\./i,
+      /Executing.*\.\.\./i,
+      /Bash.*\.\.\./i,
+      /Command.*\.\.\./i,
+      /npm.*install/i,
+      /npm run/i,
+      /pip install/i,
+      /cargo build/i,
+      /make.*\.\.\./i,
+      /.*running.*$/im
+    ];
+
+    return patterns.some(pattern => pattern.test(data));
+  }
+
+  // Check if using MCP tools
+  checkUsingToolsState(data) {
+    const patterns = [
+      /Using.*tool/i,
+      /Tool.*\.\.\./i,
+      /Calling.*tool/i,
+      /MCP.*tool/i,
+      /WebFetch/i,
+      /WebSearch/i,
+      /Glob\(|Grep\(/i,
+      /Read\(|Edit\(/i,
+      /Write\(|Bash\(/i,
+      /Task\(.*\)/i,
+      /Agent\(/i
+    ];
+
+    return patterns.some(pattern => pattern.test(data));
+  }
+
+  // Check if downloading/fetching data
+  checkDownloadingState(data) {
+    const patterns = [
+      /Downloading/i,
+      /Fetching/i,
+      /Getting.*from/i,
+      /Retrieving/i,
+      /Loading.*\.\.\./i,
+      /Connecting to/i,
+      /HTTP.*\d{3}/i,
+      /response.*\d{3}/i,
+      /bytes/i,
+      /KB\/s|MB\/s/i,
+      /ETA/i
     ];
 
     return patterns.some(pattern => pattern.test(data));

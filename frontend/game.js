@@ -5,23 +5,32 @@
 // 状态常量 - 与 pty.js 保持一致
 const PetStatus = {
   IDLE: 'idle',
-  THINKING: 'thinking',
-  CODING: 'coding',
-  PERMISSION: 'permission',
-  DONE: 'done',
-  ERROR: 'error',
-  SAD: 'sad',
-  HAPPY: 'happy',
-  SPEAKING: 'speaking',
-  CRYING: 'crying',
-  SLEEPING: 'sleeping',
-  CLICKED: 'clicked'  // 点击互动
+  THINKING: 'thinking',        // 思考中
+  ANALYZING: 'analyzing',      // 分析中
+  CODING: 'coding',            // 写代码中
+  EXECUTING: 'executing',      // 执行命令中
+  USING_TOOLS: 'using_tools',  // 使用工具中
+  DOWNLOADING: 'downloading',  // 下载中
+  PERMISSION: 'permission',    // 等待授权
+  DONE: 'done',                // 完成
+  ERROR: 'error',              // 错误
+  SAD: 'sad',                  // 伤心
+  HAPPY: 'happy',              // 开心
+  ANGRY: 'angry',              // 生气
+  EXCITED: 'excited',         // 兴奋
+  BORED: 'bored',              // 无聊
+  SURPRISED: 'surprised',     // 惊讶
+  SPEAKING: 'speaking',        // 说话中
+  CRYING: 'crying',           // 哭泣
+  SLEEPING: 'sleeping',       // 睡觉
+  CLICKED: 'clicked'          // 点击互动
 };
 
 // 纹理映射
 const TextureMap = {
   [PetStatus.IDLE]: 'crab_idle',
   [PetStatus.THINKING]: 'crab_thinking',
+  [PetStatus.ANALYZING]: 'crab_thinking',
   [PetStatus.SPEAKING]: 'crab_speaking',
   [PetStatus.HAPPY]: 'crab_happy',
   [PetStatus.SAD]: 'crab_sad',
@@ -29,13 +38,21 @@ const TextureMap = {
   [PetStatus.SLEEPING]: 'crab_sleeping',
   [PetStatus.CLICKED]: 'crab_happy',
   [PetStatus.CODING]: 'crab_speaking',
+  [PetStatus.EXECUTING]: 'crab_speaking',
+  [PetStatus.USING_TOOLS]: 'crab_thinking',
+  [PetStatus.DOWNLOADING]: 'crab_thinking',
   [PetStatus.PERMISSION]: 'crab_thinking',
   [PetStatus.DONE]: 'crab_happy',
-  [PetStatus.ERROR]: 'crab_sad'
+  [PetStatus.ERROR]: 'crab_sad',
+  [PetStatus.ANGRY]: 'crab_angry',
+  [PetStatus.EXCITED]: 'crab_happy',
+  [PetStatus.BORED]: 'crab_bored',
+  [PetStatus.SURPRISED]: 'crab_surprised'
 };
 
 // 预设短语配置 - 扩展版本
 const statusMessages = {
+  // Claude 工作状态
   [PetStatus.THINKING]: [
     '让我想想...',
     '思考中...',
@@ -43,7 +60,18 @@ const statusMessages = {
     '嗯...让我理清思路',
     '这个问题有点意思...',
     '容我想一想~',
-    '我正在思考呢'
+    '我正在思考呢',
+    '大脑运转中...',
+    '整理思路ing...'
+  ],
+  [PetStatus.ANALYZING]: [
+    '深入分析中...',
+    '正在仔细研究...',
+    '分析问题ing...',
+    '让我看看怎么回事...',
+    '正在读取信息...',
+    '解析中...',
+    '研究中...'
   ],
   [PetStatus.CODING]: [
     '正在写代码...',
@@ -52,7 +80,32 @@ const statusMessages = {
     '执行命令中...',
     '代码生成中...',
     '修改ing...',
-    '正在干活~'
+    '正在干活~',
+    '敲代码中...',
+    '编写中...'
+  ],
+  [PetStatus.EXECUTING]: [
+    '执行命令中...',
+    '运行ing...',
+    '正在执行...',
+    '处理中...',
+    '操作中...',
+    '命令执行ing...'
+  ],
+  [PetStatus.USING_TOOLS]: [
+    '使用工具中...',
+    '调用工具ing...',
+    '正在操作...',
+    '处理中...',
+    '工具使用中...'
+  ],
+  [PetStatus.DOWNLOADING]: [
+    '下载中...',
+    '获取数据ing...',
+    '抓取信息...',
+    '加载中...',
+    '下载资源...',
+    '获取中...'
   ],
   [PetStatus.PERMISSION]: [
     '需要确认一下...',
@@ -60,7 +113,9 @@ const statusMessages = {
     '请确认操作权限',
     '老大，请授权一下哦',
     '这个需要你同意~',
-    '需要你点个头~'
+    '需要你点个头~',
+    '等你点头呢~',
+    '需要你批准~'
   ],
   [PetStatus.DONE]: [
     '搞定！',
@@ -69,7 +124,9 @@ const statusMessages = {
     '指令执行完毕！',
     '完美解决！',
     '又完成了一件事~',
-    '没问题搞定！'
+    '没问题搞定！',
+    '大功告成！',
+    '完成！'
   ],
   [PetStatus.ERROR]: [
     '哎呀，出错了...',
@@ -77,8 +134,12 @@ const statusMessages = {
     '抱歉 出错了...',
     '好像哪里不对...',
     '让我再试试...',
-    '这次没成功...'
+    '这次没成功...',
+    '出错啦...',
+    '遇到问题了...'
   ],
+
+  // 空闲状态
   [PetStatus.IDLE]: [
     '有什么可以帮你的吗？',
     '我在等你的消息~',
@@ -86,37 +147,89 @@ const statusMessages = {
     '来聊天吧~',
     '今天怎么样？',
     '无聊中...',
-    '随时待命！'
+    '随时待命！',
+    '找我什么事呀~',
+    '在的呢~'
   ],
+
+  // 情感状态 - 开心 (5个)
   [PetStatus.HAPPY]: [
     '太棒了！',
     '嘿嘿~',
     '开心！',
-    '完成任务！'
+    '完成任务！',
+    '好耶！'
   ],
+
+  // 情感状态 - 伤心 (5个)
   [PetStatus.SAD]: [
     '有点难过...',
     '呜呜...',
     '心情不好...',
-    '不舒服...'
+    '不舒服...',
+    '有点失落...'
   ],
+
+  // 情感状态 - 生气 (5个)
+  [PetStatus.ANGRY]: [
+    '哼！不理你了！',
+    '太过分了！',
+    '气鼓鼓...',
+    '哼！',
+    '表示强烈谴责！'
+  ],
+
+  // 情感状态 - 兴奋 (5个)
+  [PetStatus.EXCITED]: [
+    '哇！好厉害！',
+    '太酷了！',
+    '哇塞！',
+    '好棒啊！',
+    '激动！'
+  ],
+
+  // 情感状态 - 无聊 (5个)
+  [PetStatus.BORED]: [
+    '好无聊啊...',
+    '无所事事...',
+    '发懒中...',
+    '好闲哦...',
+    '无聊ing...'
+  ],
+
+  // 情感状态 - 惊讶 (5个)
+  [PetStatus.SURPRISED]: [
+    '哇！真的假的？',
+    '吓我一跳！',
+    '竟然是这样！',
+    '好意外！',
+    '哇哦！'
+  ],
+
+  // 哭泣状态
   [PetStatus.CRYING]: [
     '呜呜呜...',
     '哭一会儿...',
     '太难了...',
     '眼泪止不住...'
   ],
+
+  // 睡觉状态
   [PetStatus.SLEEPING]: [
     '呼噜呼噜...',
     'ZZZ...',
     '睡觉中...',
-    '别吵我...'
+    '别吵我...',
+    '打盹ing...'
   ],
+
+  // 点击互动
   [PetStatus.CLICKED]: [
     '嘿嘿，痒~',
     '干嘛呀~',
     '好痒哦~',
-    '戳我干嘛~'
+    '戳我干嘛~',
+    '嘿嘿~'
   ]
 };
 
@@ -394,6 +507,95 @@ function generateCrabTextures(scene) {
   graphics.generateTexture('crab_sleeping', 100, 100);
   graphics.clear();
 
+  // Angry state - 生气的螃蟹（鼓眼睛+皱眉）
+  graphics.fillStyle(0xff6b35, 1);
+  graphics.fillRoundedRect(20, 40, 60, 40, 10);
+  // 愤怒的眼睛（鼓起来）
+  graphics.fillStyle(0xffffff, 1);
+  graphics.fillCircle(35, 32, 10);
+  graphics.fillCircle(65, 32, 10);
+  graphics.fillStyle(0x000000, 1);
+  graphics.fillCircle(35, 32, 5);
+  graphics.fillCircle(65, 32, 5);
+  // 愤怒的眉毛
+  graphics.lineStyle(2, 0x000000, 1);
+  graphics.beginPath();
+  graphics.moveTo(25, 26);
+  graphics.lineTo(40, 30);
+  graphics.strokePath();
+  graphics.beginPath();
+  graphics.moveTo(75, 26);
+  graphics.lineTo(60, 30);
+  graphics.strokePath();
+  // 鼓起的嘴巴
+  graphics.fillStyle(0x8b0000, 1);
+  graphics.fillEllipse(50, 65, 12, 8);
+  // 钳子举起
+  graphics.fillStyle(0xff6b35, 1);
+  graphics.fillCircle(15, 45, 12);
+  graphics.fillCircle(85, 45, 12);
+  graphics.fillCircle(8, 35, 6);
+  graphics.fillCircle(92, 35, 6);
+
+  graphics.generateTexture('crab_angry', 100, 100);
+  graphics.clear();
+
+  // Bored state - 无聊的螃蟹（眼睛向下看+打哈欠）
+  graphics.fillStyle(0xff6b35, 1);
+  graphics.fillRoundedRect(20, 40, 60, 40, 10);
+  // 无聊的眼睛（半闭）
+  graphics.fillStyle(0xffffff, 1);
+  graphics.fillCircle(35, 35, 8);
+  graphics.fillCircle(65, 35, 8);
+  graphics.fillStyle(0x000000, 1);
+  graphics.fillCircle(35, 36, 3);
+  graphics.fillCircle(65, 36, 3);
+  // 上眼皮（向下耷拉）
+  graphics.lineStyle(2, 0x000000, 1);
+  graphics.beginPath();
+  graphics.moveTo(27, 32);
+  graphics.lineTo(43, 33);
+  graphics.strokePath();
+  graphics.beginPath();
+  graphics.moveTo(57, 33);
+  graphics.lineTo(73, 32);
+  graphics.strokePath();
+  // 嘴巴（打哈欠）
+  graphics.fillStyle(0x8b0000, 1);
+  graphics.fillEllipse(50, 62, 10, 6);
+  // 钳子放下
+  graphics.fillStyle(0xff6b35, 1);
+  graphics.fillCircle(15, 60, 12);
+  graphics.fillCircle(85, 60, 12);
+  graphics.fillCircle(8, 50, 6);
+  graphics.fillCircle(92, 50, 6);
+
+  graphics.generateTexture('crab_bored', 100, 100);
+  graphics.clear();
+
+  // Surprised state - 惊讶的螃蟹（眼睛睁大+嘴巴张圆）
+  graphics.fillStyle(0xff6b35, 1);
+  graphics.fillRoundedRect(20, 40, 60, 40, 10);
+  // 惊讶的眼睛（睁很大）
+  graphics.fillStyle(0xffffff, 1);
+  graphics.fillCircle(35, 30, 10);
+  graphics.fillCircle(65, 30, 10);
+  graphics.fillStyle(0x000000, 1);
+  graphics.fillCircle(35, 30, 6);
+  graphics.fillCircle(65, 30, 6);
+  // 惊讶的嘴巴（张圆）
+  graphics.fillStyle(0x8b0000, 1);
+  graphics.fillCircle(50, 60, 10);
+  // 钳子举起
+  graphics.fillStyle(0xff6b35, 1);
+  graphics.fillCircle(15, 45, 12);
+  graphics.fillCircle(85, 45, 12);
+  graphics.fillCircle(8, 35, 6);
+  graphics.fillCircle(92, 35, 6);
+
+  graphics.generateTexture('crab_surprised', 100, 100);
+  graphics.clear();
+
   // Generate background gradient texture
   const bgGraphics = scene.make.graphics({ x: 0, y: 0, add: false });
   bgGraphics.fillGradientStyle(0x1a1a2e, 0x1a1a2e, 0x16213e, 0x0f3460, 1);
@@ -565,8 +767,20 @@ function setupPTY() {
           case PetStatus.THINKING:
             setAnimation(PetStatus.THINKING);
             break;
+          case PetStatus.ANALYZING:
+            setAnimation(PetStatus.ANALYZING);
+            break;
           case PetStatus.CODING:
             setAnimation(PetStatus.CODING);
+            break;
+          case PetStatus.EXECUTING:
+            setAnimation(PetStatus.EXECUTING);
+            break;
+          case PetStatus.USING_TOOLS:
+            setAnimation(PetStatus.USING_TOOLS);
+            break;
+          case PetStatus.DOWNLOADING:
+            setAnimation(PetStatus.DOWNLOADING);
             break;
           case PetStatus.PERMISSION:
             setAnimation(PetStatus.PERMISSION);
@@ -1371,6 +1585,102 @@ function setAnimation(anim) {
         repeat: 1
       });
       showBubble(getStatusMessage(PetStatus.CLICKED));
+      break;
+
+    case PetStatus.ANALYZING:
+      // 分析中 - 眼睛转动的效果
+      scene.tweens.add({
+        targets: GameState.crab,
+        scaleY: 0.97,
+        y: 182,
+        duration: 400,
+        yoyo: true,
+        repeat: -1
+      });
+      if (!skipBubble) showBubble(getStatusMessage(PetStatus.ANALYZING));
+      break;
+
+    case PetStatus.EXECUTING:
+      // 执行中 - 快速抖动
+      scene.tweens.add({
+        targets: GameState.crab,
+        x: '+=3',
+        duration: 80,
+        yoyo: true,
+        repeat: -1
+      });
+      if (!skipBubble) showBubble(getStatusMessage(PetStatus.EXECUTING));
+      break;
+
+    case PetStatus.USING_TOOLS:
+      // 使用工具中 - 钳子摆动
+      scene.tweens.add({
+        targets: GameState.crab,
+        scaleX: 1.05,
+        duration: 200,
+        yoyo: true,
+        repeat: -1
+      });
+      if (!skipBubble) showBubble(getStatusMessage(PetStatus.USING_TOOLS));
+      break;
+
+    case PetStatus.DOWNLOADING:
+      // 下载中 - 上下浮动
+      scene.tweens.add({
+        targets: GameState.crab,
+        y: 175,
+        duration: 500,
+        yoyo: true,
+        repeat: -1
+      });
+      if (!skipBubble) showBubble(getStatusMessage(PetStatus.DOWNLOADING));
+      break;
+
+    case PetStatus.ANGRY:
+      // 生气 - 摇晃
+      scene.tweens.add({
+        targets: GameState.crab,
+        x: '+=5',
+        duration: 80,
+        yoyo: true,
+        repeat: -1
+      });
+      showBubble(getStatusMessage(PetStatus.ANGRY));
+      break;
+
+    case PetStatus.EXCITED:
+      // 兴奋 - 快速跳跃
+      scene.tweens.add({
+        targets: GameState.crab,
+        y: 145,
+        duration: 150,
+        yoyo: true,
+        repeat: 5
+      });
+      break;
+
+    case PetStatus.BORED:
+      // 无聊 - 轻微下沉
+      scene.tweens.add({
+        targets: GameState.crab,
+        y: 190,
+        scaleY: 0.98,
+        duration: 1000,
+        yoyo: true,
+        repeat: -1
+      });
+      break;
+
+    case PetStatus.SURPRISED:
+      // 惊讶 - 突然变大
+      scene.tweens.add({
+        targets: GameState.crab,
+        scaleX: 1.15,
+        scaleY: 1.15,
+        duration: 150,
+        yoyo: true,
+        repeat: 1
+      });
       break;
   }
 }
