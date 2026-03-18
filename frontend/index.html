@@ -4,34 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Claude Pet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="app">
-    <!-- Title bar for dragging -->
+    <!-- Title bar -->
     <div id="title-bar">
       <span class="title">Claude Pet</span>
       <div class="window-controls">
+        <button id="btn-history" class="btn-control" title="历史记录">📜</button>
         <button id="btn-toggle-cli" class="btn-control" title="打开 CLI">⚡</button>
         <button id="btn-minimize" class="btn-control">─</button>
         <button id="btn-close" class="btn-control">✕</button>
       </div>
     </div>
 
-    <!-- Main content area -->
+    <!-- Main content -->
     <div id="main-content">
-      <!-- CLI Panel -->
-      <div id="cli-panel" class="hidden">
-        <div id="terminal-container"></div>
-        <div id="cli-input-area">
-          <input type="text" id="cli-input" placeholder="在 CLI 模式输入...">
-        </div>
-      </div>
-
-      <!-- Pet Panel -->
+      <!-- Pet Panel (左侧固定显示) -->
       <div id="pet-panel">
         <!-- Game container -->
-        <div id="game-container"></div>
+        <div id="game-container">
+          <div id="game-resize-handle"></div>
+        </div>
 
         <!-- Chat bubble -->
         <div id="chat-bubble" class="hidden">
@@ -50,26 +48,45 @@
           </div>
         </div>
 
+        <!-- History panel -->
+        <div id="history-panel" class="hidden">
+          <div class="history-header">
+            <span>对话历史</span>
+            <button id="btn-close-history" class="btn-control">✕</button>
+          </div>
+          <div id="history-list"></div>
+          <div class="history-footer">
+            <button id="btn-clear-history" class="btn-clear">清空历史</button>
+          </div>
+        </div>
+
         <!-- Input area -->
         <div id="input-area">
           <textarea id="user-input" placeholder="和 Claude 聊天..." rows="1" maxlength="500"></textarea>
           <button id="btn-send">发送</button>
         </div>
-      </div>
-    </div>
 
-    <!-- Status indicator -->
-    <div id="status">
-      <span id="status-dot"></span>
-      <span id="status-text">在线</span>
+        <!-- Quick commands -->
+        <div id="quick-commands">
+          <button class="quick-cmd" data-cmd="explain" title="解释选中代码">📖 解释</button>
+          <button class="quick-cmd" data-cmd="refactor" title="重写代码">🔧 重构</button>
+          <button class="quick-cmd" data-cmd="debug" title="调试bug">🐛 调试</button>
+          <button class="quick-cmd" data-cmd="comment" title="添加注释">📝 注释</button>
+        </div>
+      </div>
+
+      <!-- CLI Panel (右侧隐藏，展开时显示) -->
+      <div id="cli-panel" class="hidden">
+        <div id="terminal-container"></div>
+      </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-  <!-- xterm.js -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
   <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+  <script src="storage.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

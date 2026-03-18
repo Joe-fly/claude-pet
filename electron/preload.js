@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   pty: {
     start: () => ipcRenderer.invoke('pty-start'),
     input: (input) => ipcRenderer.invoke('pty-input', input),
+    chat: (message) => ipcRenderer.invoke('pty-chat', message),
     permit: () => ipcRenderer.invoke('pty-permit'),
     deny: () => ipcRenderer.invoke('pty-deny'),
     permitPermanently: () => ipcRenderer.invoke('pty-permit-permanently'),
@@ -53,5 +54,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // CLI View toggle
   toggleCliView: () => ipcRenderer.invoke('toggle-cli-view'),
-  getCliViewState: () => ipcRenderer.invoke('get-cli-view-state')
+  getCliViewState: () => ipcRenderer.invoke('get-cli-view-state'),
+
+  // Window resize event
+  onResize: (callback) => {
+    ipcRenderer.on('window-resize', (event, data) => callback(data));
+  },
+  removeResizeListener: () => {
+    ipcRenderer.removeAllListeners('window-resize');
+  }
 });

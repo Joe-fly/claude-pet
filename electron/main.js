@@ -1,6 +1,5 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
 const ptyManager = require('./pty');
 
 // Disable sandbox for node-pty to work on macOS
@@ -13,13 +12,15 @@ let tray = null;
 let isQuitting = false;
 let isCliView = false;
 
-// Flask backend process
-let flaskProcess = null;
-
 // PTY window dimensions
-const PET_WIDTH = 320;
-const PET_HEIGHT = 480;
-const CLI_WIDTH = 800;
+const PET_WIDTH = 340;
+const PET_HEIGHT = 416;
+const CLI_WIDTH = 1150;
+const CLI_HEIGHT = 650;
+const PET_MIN_WIDTH = 340;
+const PET_MIN_HEIGHT = 416;
+const CLI_MIN_WIDTH = 800;
+const CLI_MIN_HEIGHT = 400;
 
 // Get the correct path for resources
 function getResourcePath(relativePath) {
@@ -29,26 +30,6 @@ function getResourcePath(relativePath) {
   return path.join(__dirname, '..', relativePath);
 }
 
-// Start Flask backend
-function startFlaskBackend() {
-  const backendPath = path.join(__dirname, '..', 'backend', 'app.py');
-
-  flaskProcess = spawn('python3', [backendPath], {
-    cwd: path.join(__dirname, '..', 'backend'),
-    stdio: 'pipe'
-  });
-
-  flaskProcess.stdout.on('data', (data) => {
-    console.log('[Flask]', data.toString());
-  });
-
-  flaskProcess.stderr.on('data', (data) => {
-    console.error('[Flask Error]', data.toString());
-  });
-
-  console.log('Flask backend started');
-}
-
 // Create main window
 function createWindow() {
   const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
@@ -56,12 +37,16 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: PET_WIDTH,
     height: PET_HEIGHT,
-    x: screenWidth - 340,
-    y: 40,
+    x: Math.round((screenWidth - PET_WIDTH) / 2),
+    y: Math.round((screenHeight - PET_HEIGHT) / 2),
     frame: false,
-    transparent: true,
+    transparent: false,
+    backgroundColor: '#0A0E1A',
+    hasShadow: false,
     alwaysOnTop: true,
-    resizable: false,
+    resizable: true,
+    minWidth: 340,
+    minHeight: PET_MIN_HEIGHT,
     skipTaskbar: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -75,9 +60,6 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 
-  // Enable transparency effects
-  mainWindow.setOpacity(0.95);
-
   // Handle close to tray
   mainWindow.on('close', (event) => {
     if (!isQuitting) {
@@ -90,6 +72,20 @@ function createWindow() {
     mainWindow = null;
     global.mainWindow = null;
   });
+
+  // 通知前端窗口尺寸变化
+  const sendResizeEvent = () => {
+    if (mainWindow) {
+      const [width, height] = mainWindow.getSize();
+      mainWindow.webContents.send('window-resize', { width, height, isCliView });
+    }
+  };
+
+  // 监听 resize（窗口大小改变结束）
+  mainWindow.on('resize', sendResizeEvent);
+
+  // 监听 move（窗口拖动过程中）
+  mainWindow.on('move', sendResizeEvent);
 
   console.log('Main window created');
 }
@@ -203,6 +199,15 @@ ipcMain.handle('pty-input', (event, input) => {
   ptyManager.write(input);
 });
 
+// Chat handler - sends message to PTY and gets response
+ipcMain.handle('pty-chat', async (event, message) => {
+  if (!ptyManager.shell || !ptyManager.isReady) {
+    return '[Claude 未启动，请先点击 ⚡ 打开 CLI 面板]';
+  }
+
+  return await ptyManager.chat(message);
+});
+
 ipcMain.handle('pty-permit', () => {
   ptyManager.permit();
 });
@@ -227,17 +232,34 @@ ipcMain.handle('pty-stop', () => {
 ipcMain.handle('toggle-cli-view', () => {
   if (!mainWindow) return;
 
-  const { width: screenWidth } = screen.getPrimaryDisplay().workAreaSize;
+  // 获取当前窗口位置
+  const [currentX, currentY] = mainWindow.getPosition();
+  const [currentWidth, currentHeight] = mainWindow.getSize();
 
   if (isCliView) {
     // Switch to Pet view
-    mainWindow.setSize(PET_WIDTH, PET_HEIGHT);
-    mainWindow.setPosition(screenWidth - PET_WIDTH - 20, 40);
+    // 先设置最小尺寸，允许窗口缩小
+    mainWindow.setMinimumSize(1, 1);
+    // 计算新位置，保持窗口居中或保持在原来位置
+    const newX = currentX + (currentWidth - PET_WIDTH) / 2;
+    mainWindow.setBounds({
+      x: Math.round(newX),
+      y: currentY,
+      width: PET_WIDTH,
+      height: PET_HEIGHT
+    }, true);  // true = animate
+    mainWindow.setMinimumSize(PET_MIN_WIDTH, PET_MIN_HEIGHT);
     isCliView = false;
   } else {
     // Switch to CLI view
-    mainWindow.setSize(CLI_WIDTH, PET_HEIGHT);
-    mainWindow.setPosition(screenWidth - CLI_WIDTH - 20, 40);
+    // 计算新位置，保持窗口左边缘对齐
+    mainWindow.setMinimumSize(CLI_MIN_WIDTH, CLI_MIN_HEIGHT);
+    mainWindow.setBounds({
+      x: currentX,
+      y: currentY,
+      width: CLI_WIDTH,
+      height: CLI_HEIGHT
+    }, true);  // true = animate
     isCliView = true;
   }
 
@@ -251,7 +273,6 @@ ipcMain.handle('get-cli-view-state', () => {
 // App lifecycle
 app.whenReady().then(() => {
   console.log('App starting...');
-  startFlaskBackend();
   createTray();
   createWindow();
 });
@@ -272,9 +293,6 @@ app.on('activate', () => {
 
 app.on('before-quit', () => {
   isQuitting = true;
-  if (flaskProcess) {
-    flaskProcess.kill();
-  }
   if (ptyManager) {
     ptyManager.stop();
   }
