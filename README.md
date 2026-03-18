@@ -1,6 +1,8 @@
 # Claude Pet v2.0
 
-一个可爱的桌面宠物应用，集成了完整的 Claude Code CLI 能力。
+一个可爱的桌面宠物应用，集成了完整的 Claude Code CLI 能力，有Pet Mode（宠物模式）和Cli Mode（完整模式）
+<img width="903" height="623" alt="cli-mode" src="https://github.com/user-attachments/assets/5931fe84-a1ff-4cae-b368-7a74fad51ed5" />
+<img width="340" height="416" alt="pet-mode" src="https://github.com/user-attachments/assets/8b3675ef-2e84-4c19-b677-e4a94326d4ec" />
 
 ![Claude Pet](https://img.shields.io/badge/version-2.0.0-blue) ![Electron](https://img.shields.io/badge/Electron-28+-green) ![Platform-macOS](https://img.shields.io/badge/Platform-macOS-orange)
 
